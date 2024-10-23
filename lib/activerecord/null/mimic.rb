@@ -45,7 +45,6 @@ module ActiveRecord
         if (reflection = reflections.find { |r| r.name == method })
           case reflection.macro
           when :has_many
-            
             define_memoized_association(method, reflection.klass.none)
           when :has_one, :belongs_to
             define_memoized_association(method, reflection.klass.null)
