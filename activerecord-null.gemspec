@@ -4,7 +4,7 @@ require_relative "lib/activerecord/null/version"
 
 Gem::Specification.new do |spec|
   spec.name = "activerecord-null"
-  spec.version = Activerecord::Null::VERSION
+  spec.version = ActiveRecord::Null::VERSION
   spec.authors = ["Jim Gay"]
   spec.email = ["jim@saturnflyer.com"]
 

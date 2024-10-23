@@ -2,7 +2,7 @@
 
 require_relative "null/version"
 require_relative "null/mimic"
-module Activerecord
+module ActiveRecord
   # Extend any ActiveRecord class with this module to add a null object.
   # Add it to your primary abstract class.
   #
@@ -25,7 +25,7 @@ module Activerecord
     #
     def Null(klass = self, &)
       null_class = Class.new do
-        include ::Activerecord::Null::Mimic
+        include ::ActiveRecord::Null::Mimic
         mimics klass
 
         include Singleton

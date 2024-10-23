@@ -1,4 +1,8 @@
-module Activerecord
+# frozen_string_literal: true
+
+require "active_support/concern"
+
+module ActiveRecord
   module Null
     module Mimic
       extend ActiveSupport::Concern
