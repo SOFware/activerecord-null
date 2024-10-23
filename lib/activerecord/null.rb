@@ -9,7 +9,7 @@ module ActiveRecord
   # @example
   #   class ApplicationRecord < ActiveRecord::Base
   #     primary_abstract_class
-  #     extend Activerecord::Null
+  #     extend ActiveRecord::Null
   #   end
   module Null
     # Define a Null class for the given class.

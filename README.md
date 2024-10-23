@@ -1,4 +1,4 @@
-# Activerecord::Null
+# ActiveRecord::Null
 
 Create null objects for ActiveRecord models.
 
@@ -14,12 +14,12 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
-Extend your primary abstract class with `Activerecord::Null`.
+Extend your primary abstract class with `ActiveRecord::Null`.
 
 ```ruby
 class ApplicationRecord < ActiveRecord::Base
   primary_abstract_class
-  extend Activerecord::Null
+  extend ActiveRecord::Null
 end
 ```
 

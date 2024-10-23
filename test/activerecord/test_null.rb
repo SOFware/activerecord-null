@@ -4,7 +4,7 @@ require "test_helper"
 
 class ApplicationRecord < ActiveRecord::Base
   primary_abstract_class
-  extend Activerecord::Null
+  extend ActiveRecord::Null
 end
 
 class Business < ApplicationRecord
@@ -26,7 +26,7 @@ class User < ApplicationRecord
   end
 end
 
-class Activerecord::TestNull < Minitest::Spec
+class ActiveRecord::TestNull < Minitest::Spec
   describe ".null" do
     it "returns a null object" do
       expect(User.null).must_be_instance_of User::Null
