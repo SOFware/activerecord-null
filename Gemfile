@@ -13,3 +13,5 @@ gem "simplecov"
 
 # Release management
 gem "reissue"
+
+gem "sqlite3"
