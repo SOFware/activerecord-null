@@ -34,6 +34,8 @@ module ActiveRecord
         end
       end
 
+      def null? = true
+
       def destroyed? = false
 
       def new_record? = false
