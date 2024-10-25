@@ -15,13 +15,15 @@ end
 
 class Post < ApplicationRecord
   belongs_to :user
+
+  Null()
 end
 
 class User < ApplicationRecord
   belongs_to :business
   has_many :posts
 
-  Null do
+  Null([:team_name, :other] => "Unknown") do
     def name = "None"
   end
 end
@@ -88,7 +90,15 @@ class ActiveRecord::TestNull < Minitest::Spec
     end
 
     it "has default nil values for attributes of the mimic model class" do
-      expect(User.null.team_name).must_be_nil
+      expect(Post.null.title).must_be_nil
+    end
+
+    it "creates a Null object without a block" do
+      expect(Post.null).must_be_instance_of Post::Null
+    end
+
+    it "assigns the named attributes with the given values" do
+      expect(User.null.team_name).must_equal "Unknown"
     end
   end
 
