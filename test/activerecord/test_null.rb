@@ -86,6 +86,10 @@ class ActiveRecord::TestNull < Minitest::Spec
       expect(User.null.posts).must_be_kind_of ActiveRecord::Relation
       expect(User.null.posts.to_a).must_equal []
     end
+
+    it "has default nil values for attributes of the mimic model class" do
+      expect(User.null.team_name).must_be_nil
+    end
   end
 
   describe "Parent class object" do

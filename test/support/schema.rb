@@ -5,6 +5,7 @@ ActiveRecord::Schema.define do
 
   create_table :users do |t|
     t.string :name
+    t.integer :team_name
     t.references :business
   end
 

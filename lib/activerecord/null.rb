@@ -23,14 +23,15 @@ module ActiveRecord
     #
     #   Business.null # => #<Business::Null:0x0000000000000000>
     #
-    def Null(klass = self, &)
+    def Null(inherit: self, &)
       null_class = Class.new do
         include ::ActiveRecord::Null::Mimic
-        mimics klass
+        mimics inherit
 
         include Singleton
       end
       null_class.class_eval(&)
+      null_class.define_attribute_methods(inherit.attribute_names)
       const_set(:Null, null_class)
 
       define_singleton_method(:null) { null_class.instance }
