@@ -20,7 +20,13 @@ module ActiveRecord
 
         def self.define_attribute_methods(attribute_names, value: nil)
           attribute_names.each do |attribute_name|
-            define_method(attribute_name) { value } unless method_defined?(attribute_name)
+            unless method_defined?(attribute_name)
+              if value.is_a?(Proc)
+                define_method(attribute_name, &value)
+              else
+                define_method(attribute_name) { value }
+              end
+            end
           end
         end
       end

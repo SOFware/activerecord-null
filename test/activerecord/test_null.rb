@@ -16,7 +16,7 @@ end
 class Post < ApplicationRecord
   belongs_to :user
 
-  Null()
+  Null([:description] => -> { "From the callable!" })
 end
 
 class User < ApplicationRecord
@@ -99,6 +99,10 @@ class ActiveRecord::TestNull < Minitest::Spec
 
     it "assigns the named attributes with the given values" do
       expect(User.null.team_name).must_equal "Unknown"
+    end
+
+    it "assigns callable values to attributes" do
+      expect(Post.null.description).must_equal "From the callable!"
     end
   end
 

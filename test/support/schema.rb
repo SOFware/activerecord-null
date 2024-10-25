@@ -11,6 +11,7 @@ ActiveRecord::Schema.define do
 
   create_table :posts do |t|
     t.string :title
+    t.string :description
     t.references :user
   end
 end
