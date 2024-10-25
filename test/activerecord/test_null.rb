@@ -15,13 +15,15 @@ end
 
 class Post < ApplicationRecord
   belongs_to :user
+
+  Null([:description] => -> { "From the callable!" })
 end
 
 class User < ApplicationRecord
   belongs_to :business
   has_many :posts
 
-  Null do
+  Null([:team_name, :other] => "Unknown") do
     def name = "None"
   end
 end
@@ -85,6 +87,22 @@ class ActiveRecord::TestNull < Minitest::Spec
     it "has an empty relation for has_many association" do
       expect(User.null.posts).must_be_kind_of ActiveRecord::Relation
       expect(User.null.posts.to_a).must_equal []
+    end
+
+    it "has default nil values for attributes of the mimic model class" do
+      expect(Post.null.title).must_be_nil
+    end
+
+    it "creates a Null object without a block" do
+      expect(Post.null).must_be_instance_of Post::Null
+    end
+
+    it "assigns the named attributes with the given values" do
+      expect(User.null.team_name).must_equal "Unknown"
+    end
+
+    it "assigns callable values to attributes" do
+      expect(Post.null.description).must_equal "From the callable!"
     end
   end
 
