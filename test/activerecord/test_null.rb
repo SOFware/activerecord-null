@@ -34,6 +34,10 @@ class ActiveRecord::TestNull < Minitest::Spec
   end
 
   describe "Null" do
+    it "is null" do
+      expect(User.null.null?).must_equal true
+    end
+
     it "is not persisted" do
       expect(User.null.persisted?).must_equal false
     end
@@ -81,6 +85,12 @@ class ActiveRecord::TestNull < Minitest::Spec
     it "has an empty relation for has_many association" do
       expect(User.null.posts).must_be_kind_of ActiveRecord::Relation
       expect(User.null.posts.to_a).must_equal []
+    end
+  end
+
+  describe "Parent class object" do
+    it "is not null" do
+      expect(User.new.null?).must_equal false
     end
   end
 end

@@ -35,5 +35,9 @@ module ActiveRecord
 
       define_singleton_method(:null) { null_class.instance }
     end
+
+    def self.extended(base)
+      base.define_method(:null?) { false }
+    end
   end
 end

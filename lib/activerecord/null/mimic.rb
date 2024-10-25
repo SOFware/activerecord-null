@@ -34,6 +34,8 @@ module ActiveRecord
         end
       end
 
+      def null? = true
+
       def destroyed? = false
 
       def new_record? = false
@@ -63,7 +65,7 @@ module ActiveRecord
       private
 
       def define_memoized_association(method, value)
-        define_singleton_method(method) do
+        self.class.define_method(method) do
           if instance_variable_defined?(:"@#{method}")
             instance_variable_get(:"@#{method}")
           else
