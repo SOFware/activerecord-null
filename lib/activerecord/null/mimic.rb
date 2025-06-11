@@ -54,6 +54,8 @@ module ActiveRecord
 
       def persisted? = false
 
+      def has_query_constraints? = false
+
       def method_missing(method, ...)
         reflections = mimic_model_class.reflect_on_all_associations
         if (reflection = reflections.find { |r| r.name == method })

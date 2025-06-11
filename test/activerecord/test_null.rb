@@ -35,6 +35,12 @@ class ActiveRecord::TestNull < Minitest::Spec
     end
   end
 
+  describe ".has_query_constraints?" do
+    it "returns false" do
+      expect(User.null.has_query_constraints?).must_equal false
+    end
+  end
+
   describe "Null" do
     it "is null" do
       expect(User.null.null?).must_equal true
