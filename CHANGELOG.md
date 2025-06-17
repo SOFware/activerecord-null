@@ -14,3 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `null?` method to both parent class objects and null objects
 - Null objects now have default nil values for attributes of the mimic model class
 - `Null()` method can now accept a hash of attribute names and values to assign to the null object
+- `has_query_constraints?` method to null objects
+- `respond_to?` method to null objects
+- `_read_attribute` method to null objects
+- Null class now return false for `composite_primary_key?`

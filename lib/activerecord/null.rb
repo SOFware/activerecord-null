@@ -43,6 +43,16 @@ module ActiveRecord
         mimics inherit
 
         include Singleton
+
+        class << self
+          def method_missing(method, ...)
+            mimic_model_class.respond_to?(method) ? mimic_model_class.send(method, ...) : super
+          end
+
+          def respond_to_missing?(method, include_private = false)
+            mimic_model_class.respond_to?(method, include_private) || super
+          end
+        end
       end
       null_class.class_eval(&) if block_given?
 

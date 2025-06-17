@@ -35,6 +35,18 @@ class ActiveRecord::TestNull < Minitest::Spec
     end
   end
 
+  describe ".has_query_constraints?" do
+    it "returns false" do
+      expect(User::Null.has_query_constraints?).must_equal false
+    end
+  end
+
+  describe ".composite_primary_key?" do
+    it "returns false" do
+      expect(User::Null.composite_primary_key?).must_equal false
+    end
+  end
+
   describe "Null" do
     it "is null" do
       expect(User.null.null?).must_equal true
@@ -103,6 +115,14 @@ class ActiveRecord::TestNull < Minitest::Spec
 
     it "assigns callable values to attributes" do
       expect(Post.null.description).must_equal "From the callable!"
+    end
+
+    it "reads attributes and returns nil" do
+      expect(Post.null._read_attribute(:description)).must_be_nil
+    end
+
+    it "responds to mimic methods" do
+      expect(Post.null.respond_to?(:description)).must_equal true
     end
   end
 
