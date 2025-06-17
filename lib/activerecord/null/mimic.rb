@@ -54,7 +54,7 @@ module ActiveRecord
 
       def persisted? = false
 
-      def has_query_constraints? = false
+      def _read_attribute(_) = nil
 
       def method_missing(method, ...)
         reflections = mimic_model_class.reflect_on_all_associations
