@@ -48,6 +48,26 @@ It will even work with associations.
 User.null.posts # => []
 ```
 
+By default, the null object will have the same attributes as the original model and will return `nil` for all attributes.
+
+You can override this by passing a hash to the `Null` method where the key is an array of attributes and the value is the value to return for the attribute.
+
+```ruby
+class User < ApplicationRecord
+  Null([:name, :team_name] => "Unknown") do
+    def other_attribute = "Other"
+  end
+end
+```
+
+You may also pass a callable to the hash which will be used to determine the value for the attribute.
+
+```ruby
+class User < ApplicationRecord
+  Null([:name, :team_name] => -> { "Unknown" })
+end
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
