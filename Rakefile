@@ -11,4 +11,5 @@ require "reissue/gem"
 
 Reissue::Task.create :reissue do |task|
   task.version_file = "lib/activerecord/null/version.rb"
+  task.fragment = :git
 end
