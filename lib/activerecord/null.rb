@@ -40,6 +40,7 @@ module ActiveRecord
       end
       null_class = Class.new do
         include ::ActiveRecord::Null::Mimic
+
         mimics inherit
 
         include Singleton
