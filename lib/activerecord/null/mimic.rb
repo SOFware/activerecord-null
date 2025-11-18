@@ -35,7 +35,13 @@ module ActiveRecord
 
       attr_reader :id
 
-      def [](*)
+      def [](key)
+        normalized_key = key.to_sym
+        association_names = mimic_model_class.reflect_on_all_associations.map(&:name)
+
+        return nil if association_names.include?(normalized_key)
+
+        respond_to?(normalized_key) ? send(normalized_key) : nil
       end
 
       def is_a?(klass)
