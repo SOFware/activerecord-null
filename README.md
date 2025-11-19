@@ -68,6 +68,19 @@ class User < ApplicationRecord
 end
 ```
 
+Customize the null class name:
+
+```ruby
+class User < ApplicationRecord
+  Null(class_name: "Guest")
+  class << self
+    alias_method :null, :guest
+  end
+end
+
+User.guest # returns a User::Guest instance
+```
+
 ### Void Objects
 
 While `Null` objects are singletons (one instance per model), `Void` objects are instantiable null objects that allow creating multiple instances with different attribute values.
@@ -115,6 +128,18 @@ Void objects support the same features as Null objects:
 - Custom methods via block syntax
 - Association handling
 - All ActiveRecord query methods (`null?`, `persisted?`, etc.)
+- Custom class names via `class_name:` parameter
+
+```ruby
+class Product < ApplicationRecord
+  Void(class_name: "Placeholder")
+  class << self
+    alias_method :void, :placeholder
+  end
+end
+
+Product.placeholder # returns a Product::Placeholder instance
+```
 
 Use `Null` when you need a single shared null object instance. Use `Void` when you need multiple null object instances with different attribute values.
 

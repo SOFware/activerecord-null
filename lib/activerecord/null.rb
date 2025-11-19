@@ -156,7 +156,7 @@ module ActiveRecord
     #
     # @param inherit [Class] The class from which the Null object inherits attributes
     # @param assignments [Array] The attributes to assign to the null object
-    def Null(inherit = self, assignments = {}, &)
+    def Null(inherit = self, class_name: :Null, **assignments, &)
       if inherit.is_a?(Hash)
         assignments = inherit
         inherit = self
@@ -165,7 +165,7 @@ module ActiveRecord
       null_class = create_null_class(inherit, assignments, singleton: true)
       null_class.class_eval(&) if block_given?
 
-      inherit.const_set(:Null, null_class)
+      inherit.const_set(class_name, null_class)
       inherit.define_singleton_method(:null) { null_class.instance }
     end
 
@@ -185,7 +185,7 @@ module ActiveRecord
     #
     # @param inherit [Class] The class from which the Void object inherits attributes
     # @param assignments [Hash] The default attributes to assign to void objects
-    def Void(inherit = self, assignments = {}, &)
+    def Void(inherit = self, class_name: :Void, **assignments, &)
       if inherit.is_a?(Hash)
         assignments = inherit
         inherit = self
@@ -194,7 +194,7 @@ module ActiveRecord
       void_class = create_null_class(inherit, assignments, singleton: false)
       void_class.class_eval(&) if block_given?
 
-      inherit.const_set(:Void, void_class)
+      inherit.const_set(class_name, void_class)
       inherit.define_singleton_method(:void) { |attributes = {}| void_class.new(attributes) }
     end
 
