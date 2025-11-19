@@ -45,7 +45,12 @@ module ActiveRecord
 
         include Singleton
 
+        # Store assignments for lazy initialization
+        @_null_assignments = assignments
+
         class << self
+          attr_reader :_null_assignments
+
           def method_missing(method, ...)
             mimic_model_class.respond_to?(method) ? mimic_model_class.send(method, ...) : super
           end
@@ -53,18 +58,42 @@ module ActiveRecord
           def respond_to_missing?(method, include_private = false)
             mimic_model_class.respond_to?(method, include_private) || super
           end
+
+          # Override instance to initialize attributes lazily
+          def instance
+            initialize_attribute_methods unless @_attributes_initialized
+            super
+          end
+
+          private
+
+          def initialize_attribute_methods
+            # Only initialize if table exists
+            return unless mimic_model_class.table_exists?
+
+            # Define custom assignment methods first
+            if _null_assignments.any?
+              _null_assignments.each do |attributes, value|
+                define_attribute_methods(attributes, value:)
+              end
+            end
+
+            # Then define database attributes
+            nil_assignments = mimic_model_class.attribute_names
+            # Remove custom assignments from database attributes
+            if _null_assignments.any?
+              _null_assignments.each do |attributes, _|
+                nil_assignments -= attributes
+              end
+            end
+            define_attribute_methods(nil_assignments) if nil_assignments.any?
+
+            @_attributes_initialized = true
+          end
         end
       end
       null_class.class_eval(&) if block_given?
 
-      nil_assignments = inherit.attribute_names
-      if assignments.any?
-        assignments.each do |attributes, value|
-          nil_assignments -= attributes
-          null_class.define_attribute_methods(attributes, value:)
-        end
-      end
-      null_class.define_attribute_methods(nil_assignments)
       inherit.const_set(:Null, null_class)
 
       inherit.define_singleton_method(:null) { null_class.instance }
