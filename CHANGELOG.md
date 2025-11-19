@@ -11,4 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Only initialize attributes when table exists (dba2ace)
 
-## [0.1.4] - Unreleased
+## [0.1.4] - 2025-11-19
+
+### Changed
+
+- Only initialize attributes when table exists (dba2ace)
