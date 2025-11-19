@@ -14,7 +14,7 @@ module ActiveRecord
 
         def self.mimic_model_class = @mimic_model_class
 
-        def self.table_name = @mimic_model_class.to_s.tableize
+        def self.table_name = @mimic_model_class.table_name
 
         def self.primary_key = @mimic_model_class.primary_key
 

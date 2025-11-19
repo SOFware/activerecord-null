@@ -229,8 +229,7 @@ class ActiveRecord::TestVoid < Minitest::Spec
 
   describe "model integration" do
     it "respects table_name from parent model" do
-      # Note: Mimic module uses tableized class name, not parent's custom table_name
-      assert_equal "products", Product::Void.table_name
+      assert_equal Product.table_name, Product::Void.table_name
     end
 
     it "respects primary_key from parent model" do
