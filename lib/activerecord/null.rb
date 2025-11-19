@@ -12,6 +12,129 @@ module ActiveRecord
   #     extend ActiveRecord::Null
   #   end
   module Null
+    private
+
+    # Shared method to create Null or Void classes
+    def create_null_class(inherit, assignments, singleton:)
+      null_class = Class.new do
+        include ::ActiveRecord::Null::Mimic
+
+        mimics inherit
+
+        # Store assignments
+        instance_variable_set(:@_assignments, assignments)
+
+        class << self
+          attr_reader :_assignments
+
+          def method_missing(method, ...)
+            mimic_model_class.respond_to?(method) ? mimic_model_class.send(method, ...) : super
+          end
+
+          def respond_to_missing?(method, include_private = false)
+            mimic_model_class.respond_to?(method, include_private) || super
+          end
+        end
+      end
+
+      if singleton
+        null_class.include(Singleton)
+        setup_singleton_attributes(null_class)
+      else
+        setup_instance_attributes(null_class)
+      end
+
+      null_class
+    end
+
+    def setup_singleton_attributes(null_class)
+      null_class.class_eval do
+        class << self
+          # Override instance to initialize attributes lazily
+          def instance
+            initialize_attribute_methods unless @_attributes_initialized
+            super
+          end
+
+          private
+
+          def initialize_attribute_methods
+            return unless mimic_model_class.table_exists?
+
+            if _assignments.any?
+              _assignments.each do |attributes, value|
+                define_attribute_methods(attributes, value:)
+              end
+            end
+
+            nil_assignments = mimic_model_class.attribute_names
+            if _assignments.any?
+              _assignments.each do |attributes, _|
+                nil_assignments -= attributes
+              end
+            end
+            define_attribute_methods(nil_assignments) if nil_assignments.any?
+
+            @_attributes_initialized = true
+          end
+        end
+      end
+    end
+
+    def setup_instance_attributes(null_class)
+      null_class.class_eval do
+        def initialize(attributes = {})
+          @_instance_attributes = attributes
+          initialize_attribute_methods
+        end
+
+        private
+
+        def initialize_attribute_methods
+          return unless self.class.mimic_model_class.table_exists?
+
+          assignments = self.class._assignments
+
+          if assignments.any?
+            assignments.each do |attributes, default_value|
+              attributes.each do |attr|
+                attr_sym = attr.to_sym
+                next if respond_to?(attr_sym)
+
+                define_singleton_method(attr_sym) do
+                  if @_instance_attributes.key?(attr_sym)
+                    @_instance_attributes[attr_sym]
+                  elsif default_value.is_a?(Proc)
+                    instance_exec(&default_value)
+                  else
+                    default_value
+                  end
+                end
+              end
+            end
+          end
+
+          nil_assignments = self.class.mimic_model_class.attribute_names
+          if assignments.any?
+            assignments.each do |attributes, _|
+              nil_assignments -= attributes.map(&:to_s)
+            end
+          end
+
+          nil_assignments.each do |attr|
+            attr_sym = attr.to_sym
+            next if respond_to?(attr_sym)
+
+            define_singleton_method(attr_sym) do
+              @_instance_attributes.key?(attr_sym) ? @_instance_attributes[attr_sym] : nil
+            end
+          end
+        end
+      end
+    end
+
+    public
+
     # Define a Null class for the given class.
     #
     # @example
@@ -38,64 +161,11 @@ module ActiveRecord
         assignments = inherit
         inherit = self
       end
-      null_class = Class.new do
-        include ::ActiveRecord::Null::Mimic
 
-        mimics inherit
-
-        include Singleton
-
-        # Store assignments for lazy initialization
-        @_null_assignments = assignments
-
-        class << self
-          attr_reader :_null_assignments
-
-          def method_missing(method, ...)
-            mimic_model_class.respond_to?(method) ? mimic_model_class.send(method, ...) : super
-          end
-
-          def respond_to_missing?(method, include_private = false)
-            mimic_model_class.respond_to?(method, include_private) || super
-          end
-
-          # Override instance to initialize attributes lazily
-          def instance
-            initialize_attribute_methods unless @_attributes_initialized
-            super
-          end
-
-          private
-
-          def initialize_attribute_methods
-            # Only initialize if table exists
-            return unless mimic_model_class.table_exists?
-
-            # Define custom assignment methods first
-            if _null_assignments.any?
-              _null_assignments.each do |attributes, value|
-                define_attribute_methods(attributes, value:)
-              end
-            end
-
-            # Then define database attributes
-            nil_assignments = mimic_model_class.attribute_names
-            # Remove custom assignments from database attributes
-            if _null_assignments.any?
-              _null_assignments.each do |attributes, _|
-                nil_assignments -= attributes
-              end
-            end
-            define_attribute_methods(nil_assignments) if nil_assignments.any?
-
-            @_attributes_initialized = true
-          end
-        end
-      end
+      null_class = create_null_class(inherit, assignments, singleton: true)
       null_class.class_eval(&) if block_given?
 
       inherit.const_set(:Null, null_class)
-
       inherit.define_singleton_method(:null) { null_class.instance }
     end
 
@@ -121,87 +191,10 @@ module ActiveRecord
         inherit = self
       end
 
-      void_class = Class.new do
-        include ::ActiveRecord::Null::Mimic
-
-        mimics inherit
-
-        # Store default assignments for merging with instance attributes
-        @_void_assignments = assignments
-
-        class << self
-          attr_reader :_void_assignments
-
-          def method_missing(method, ...)
-            mimic_model_class.respond_to?(method) ? mimic_model_class.send(method, ...) : super
-          end
-
-          def respond_to_missing?(method, include_private = false)
-            mimic_model_class.respond_to?(method, include_private) || super
-          end
-        end
-
-        # Initialize a new void instance with optional attribute overrides
-        def initialize(attributes = {})
-          @_instance_attributes = attributes
-          initialize_attribute_methods
-        end
-
-        private
-
-        def initialize_attribute_methods
-          # Only initialize if table exists
-          return unless self.class.mimic_model_class.table_exists?
-
-          # Get default assignments from class
-          void_assignments = self.class._void_assignments
-
-          # Define custom assignment methods with instance overrides
-          if void_assignments.any?
-            void_assignments.each do |attributes, default_value|
-              attributes.each do |attr|
-                attr_sym = attr.to_sym
-                next if respond_to?(attr_sym) # Skip if already defined
-
-                define_singleton_method(attr_sym) do
-                  if @_instance_attributes.key?(attr_sym)
-                    @_instance_attributes[attr_sym]
-                  elsif default_value.is_a?(Proc)
-                    instance_exec(&default_value)
-                  else
-                    default_value
-                  end
-                end
-              end
-            end
-          end
-
-          # Define database attributes
-          nil_assignments = self.class.mimic_model_class.attribute_names
-
-          # Remove custom assignments from database attributes
-          if void_assignments.any?
-            void_assignments.each do |attributes, _|
-              nil_assignments -= attributes.map(&:to_s)
-            end
-          end
-
-          # Define remaining database attributes with instance override support
-          nil_assignments.each do |attr|
-            attr_sym = attr.to_sym
-            next if respond_to?(attr_sym) # Skip if already defined
-
-            define_singleton_method(attr_sym) do
-              @_instance_attributes.key?(attr_sym) ? @_instance_attributes[attr_sym] : nil
-            end
-          end
-        end
-      end
-
+      void_class = create_null_class(inherit, assignments, singleton: false)
       void_class.class_eval(&) if block_given?
 
       inherit.const_set(:Void, void_class)
-
       inherit.define_singleton_method(:void) { |attributes = {}| void_class.new(attributes) }
     end
 
