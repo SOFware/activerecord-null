@@ -99,6 +99,112 @@ module ActiveRecord
       inherit.define_singleton_method(:null) { null_class.instance }
     end
 
+    # Define a Void class for the given class.
+    # Unlike Null, Void objects are not singletons and can be instantiated
+    # multiple times with different attribute values.
+    #
+    # @example
+    #   class Product < ApplicationRecord
+    #     Void do
+    #       def display_name = "Product: #{name}"
+    #     end
+    #   end
+    #
+    #   product1 = Product.void(name: "Widget")
+    #   product2 = Product.void(name: "Gadget")
+    #
+    # @param inherit [Class] The class from which the Void object inherits attributes
+    # @param assignments [Hash] The default attributes to assign to void objects
+    def Void(inherit = self, assignments = {}, &)
+      if inherit.is_a?(Hash)
+        assignments = inherit
+        inherit = self
+      end
+
+      void_class = Class.new do
+        include ::ActiveRecord::Null::Mimic
+
+        mimics inherit
+
+        # Store default assignments for merging with instance attributes
+        @_void_assignments = assignments
+
+        class << self
+          attr_reader :_void_assignments
+
+          def method_missing(method, ...)
+            mimic_model_class.respond_to?(method) ? mimic_model_class.send(method, ...) : super
+          end
+
+          def respond_to_missing?(method, include_private = false)
+            mimic_model_class.respond_to?(method, include_private) || super
+          end
+        end
+
+        # Initialize a new void instance with optional attribute overrides
+        def initialize(attributes = {})
+          @_instance_attributes = attributes
+          initialize_attribute_methods
+        end
+
+        private
+
+        def initialize_attribute_methods
+          # Only initialize if table exists
+          return unless self.class.mimic_model_class.table_exists?
+
+          # Get default assignments from class
+          void_assignments = self.class._void_assignments
+
+          # Define custom assignment methods with instance overrides
+          if void_assignments.any?
+            void_assignments.each do |attributes, default_value|
+              attributes.each do |attr|
+                attr_sym = attr.to_sym
+                next if respond_to?(attr_sym) # Skip if already defined
+
+                define_singleton_method(attr_sym) do
+                  if @_instance_attributes.key?(attr_sym)
+                    @_instance_attributes[attr_sym]
+                  elsif default_value.is_a?(Proc)
+                    instance_exec(&default_value)
+                  else
+                    default_value
+                  end
+                end
+              end
+            end
+          end
+
+          # Define database attributes
+          nil_assignments = self.class.mimic_model_class.attribute_names
+
+          # Remove custom assignments from database attributes
+          if void_assignments.any?
+            void_assignments.each do |attributes, _|
+              nil_assignments -= attributes.map(&:to_s)
+            end
+          end
+
+          # Define remaining database attributes with instance override support
+          nil_assignments.each do |attr|
+            attr_sym = attr.to_sym
+            next if respond_to?(attr_sym) # Skip if already defined
+
+            define_singleton_method(attr_sym) do
+              @_instance_attributes.key?(attr_sym) ? @_instance_attributes[attr_sym] : nil
+            end
+          end
+        end
+      end
+
+      void_class.class_eval(&) if block_given?
+
+      inherit.const_set(:Void, void_class)
+
+      inherit.define_singleton_method(:void) { |attributes = {}| void_class.new(attributes) }
+    end
+
     def self.extended(base)
       base.define_method(:null?) { false }
     end

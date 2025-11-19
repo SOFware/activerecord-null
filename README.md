@@ -68,6 +68,56 @@ class User < ApplicationRecord
 end
 ```
 
+### Void Objects
+
+While `Null` objects are singletons (one instance per model), `Void` objects are instantiable null objects that allow creating multiple instances with different attribute values.
+
+Define a void object for the model:
+
+```ruby
+class Product < ApplicationRecord
+  Void([:name] => "Unknown Product") do
+    def display_name
+      "Product: #{name}"
+    end
+  end
+end
+```
+
+Create instances with custom attributes:
+
+```ruby
+product1 = Product.void(name: "Widget")
+product2 = Product.void(name: "Gadget")
+
+product1.name # => "Widget"
+product2.name # => "Gadget"
+```
+
+Each call to `.void` returns a new instance:
+
+```ruby
+Product.void.object_id != Product.void.object_id # => true
+```
+
+Instance attributes override defaults:
+
+```ruby
+product = Product.void(name: "Custom")
+product.name # => "Custom" (overrides default "Unknown Product")
+
+default_product = Product.void
+default_product.name # => "Unknown Product" (uses default)
+```
+
+Void objects support the same features as Null objects:
+- Callable defaults (lambdas/procs)
+- Custom methods via block syntax
+- Association handling
+- All ActiveRecord query methods (`null?`, `persisted?`, etc.)
+
+Use `Null` when you need a single shared null object instance. Use `Void` when you need multiple null object instances with different attribute values.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
