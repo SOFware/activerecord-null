@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(bundle exec standardrb:*)",
+      "Bash(rake test:*)",
+      "Bash(ruby -Itest:*)",
+      "Bash(cat:*)",
+      "Bash(CI=1 bundle exec rake:*)",
+      "Bash(afplay:*)",
+      "Bash(ruby -Ilib:test -e:*)",
+      "Bash(open:*)",
+      "Bash(ruby -Ilib:test test/activerecord/test_null.rb -n \"/accesses attribute with symbol key/\" -v)",
+      "WebSearch",
+      "Bash(ruby -e:*)",
+      "Bash(CI=1 ruby:*)",
+      "Bash(bundle exec gem list:*)",
+      "Bash(CI=1 bundle exec ruby:*)",
+      "Bash(bundle exec ruby:*)",
+      "Bash(ruby test_no_db_access.rb:*)",
+      "Bash(bundle exec rake test:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
