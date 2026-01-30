@@ -151,11 +151,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Releasing
 
-Run `rake build:checksum` to build the gem and generate the checksum. This will also update the version number in the gemspec file.
-
-Run `rake release` to create a git tag for the version, push git commits and tags, and push the .gem file to rubygems.org.
-
-This will leave a new commit with the version number incremented in the version file and the changelog updated with the new version. Push the changes to the repository.
+Releases are automated via the [shared release workflow](https://github.com/SOFware/reissue/blob/main/.github/workflows/SHARED_WORKFLOW_README.md). Trigger a release by running the "Release gem to RubyGems.org" workflow from the Actions tab.
 
 ## Contributing
 
